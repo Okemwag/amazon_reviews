@@ -1,0 +1,6 @@
+warehouse_dir: /user/hive/warehouse
+landing_reviews_dir: /user/bigdata/landing/amazon_reviews/reviews
+manifest_dir: /user/bigdata/manifests/amazon_reviews
+processed_reviews_dir: /user/bigdata/processed/amazon_reviews/reviews_cleaned
+quality_dir: /user/bigdata/quality/amazon_reviews
+models_dir: /user/bigdata/models/amazon_reviews

@@ -1,0 +1,38 @@
+[project]
+name = "amazon_reviews"
+workspace = "/workspace"
+
+[docker]
+compose_file = "docker-compose.yml"
+namenode_container = "amazon_reviews_namenode"
+hive_container = "amazon_reviews_hive_server"
+spark_container = "amazon_reviews_spark_master"
+spark_master = "spark://spark-master:7077"
+hive_jdbc = "jdbc:hive2://localhost:10000"
+
+[local]
+raw_dir = "data/raw"
+manifest_dir = "output/metrics/manifests"
+processed_dir = "output/reports"
+
+[hdfs]
+warehouse_dir = "/user/hive/warehouse"
+landing_reviews_dir = "/user/bigdata/landing/amazon_reviews/reviews"
+manifest_dir = "/user/bigdata/manifests/amazon_reviews"
+processed_reviews_dir = "/user/bigdata/processed/amazon_reviews/reviews_cleaned"
+quality_dir = "/user/bigdata/quality/amazon_reviews"
+models_dir = "/user/bigdata/models/amazon_reviews"
+
+[hive]
+database = "ecommerce_reviews"
+raw_table = "raw_reviews"
+cleaned_table = "cleaned_reviews"
+
+[spark]
+transform_job = "/workspace/src/amazon_reviews_pipeline/processing/bronze_to_silver.py"
+quality_job = "/workspace/src/amazon_reviews_pipeline/validation/data_quality_checks.py"
+train_job = "/workspace/src/amazon_reviews_pipeline/ml/train_sentiment_model.py"
+
+[sql]
+ddl = "/workspace/hive/ddl/00_legacy_create_tables.sql"
+analysis = "/workspace/hive/queries/02_business_insights.sql"

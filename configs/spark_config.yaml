@@ -1,0 +1,4 @@
+master: spark://spark-master:7077
+transform_job: /workspace/src/amazon_reviews_pipeline/processing/bronze_to_silver.py
+quality_job: /workspace/src/amazon_reviews_pipeline/validation/data_quality_checks.py
+train_job: /workspace/src/amazon_reviews_pipeline/ml/train_sentiment_model.py

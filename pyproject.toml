@@ -1,0 +1,12 @@
+[project]
+name = "amazon-reviews-pipeline"
+version = "0.1.0"
+description = "End-to-end Hadoop, Hive, Spark, and MLlib pipeline for Amazon Reviews 2023."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+amazon-reviews = "amazon_reviews_pipeline.common.pipeline:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
