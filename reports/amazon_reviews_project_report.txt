@@ -1,0 +1,1020 @@
+AMAZON OFFICE PRODUCTS REVIEWS BIG DATA PIPELINE REPORT
+
+Title page
+
+Project title:
+Amazon Office Products Reviews Big Data Pipeline
+
+Student/project owner:
+Maureen Chemutai
+
+Repository:
+https://github.com/Okemwag/amazon_reviews.git
+
+Technology stack:
+Docker, Hadoop HDFS, Apache Hive, Apache Spark, Spark MLlib, Python, Make, uv
+
+Dataset:
+Amazon Reviews 2023, Office Products category
+
+Report date:
+14 May 2026
+
+
+Table of contents
+
+1. Introduction
+2. Problem definition and business context
+3. Dataset description
+4. Environment setup
+5. System architecture
+6. HDFS storage design
+7. Hive schema and table creation
+8. Spark data processing
+9. Hive exploratory analysis
+10. Spark vs Hive comparison
+11. Machine learning implementation
+12. Model evaluation
+13. Results interpretation
+14. Reflection and recommendations
+15. Conclusion
+16. Harvard reference list
+17. Appendices
+18. GitHub repository link
+
+
+1. Introduction
+
+This project implements a production-style big data pipeline for processing
+Amazon Office Products customer reviews. The system demonstrates the main
+capabilities expected in a modern data engineering workflow: distributed
+storage, schema-managed querying, scalable transformation, data quality
+validation, business analytics, and machine learning.
+
+Big Data refers to datasets whose size, speed, and complexity exceed what can
+be handled effectively by traditional single-machine tools such as spreadsheets
+or small relational databases. Big Data is commonly described through the
+dimensions of volume, variety, velocity, and veracity. In this project, volume
+is represented by a multi-gigabyte review dataset with millions of rows;
+variety is represented by semi-structured JSON records containing text,
+numbers, booleans, timestamps, and product identifiers; velocity is represented
+by the real-world online retail setting where new reviews can arrive
+continuously; and veracity is represented by the need to validate missing,
+duplicate, invalid, or inconsistent records before analysis.
+
+The Big Data characteristics in this project are:
+
+- Volume:
+  The project uses data at a scale that is too large for comfortable manual
+  review or spreadsheet-based analysis. The raw Office_Products.jsonl file is
+  approximately 5.4 GB and contains 12,845,712 review records. At this size,
+  simple local tools become inefficient for repeated reading, filtering,
+  aggregation, and machine learning. Hadoop HDFS is therefore used to store the
+  dataset in a distributed file system, while Spark is used to process the data
+  in parallel. The volume also affects design decisions such as storing cleaned
+  data in Parquet, partitioning by review_year and review_month, and avoiding
+  repeated full scans where possible.
+
+- Variety:
+  The dataset is semi-structured JSON Lines rather than a simple rectangular
+  CSV file. Each record contains different data types, including numeric
+  ratings, free-text reviews, product identifiers, user identifiers, timestamps,
+  boolean verified-purchase values, and helpful-vote counts. This variety
+  makes the data useful for many purposes, but it also increases complexity.
+  Numeric fields support statistical analysis, timestamp fields support trend
+  analysis, categorical fields support product and purchase comparisons, and
+  text fields support natural language processing and sentiment modelling. The
+  pipeline handles this variety by applying an explicit schema, cleaning review
+  text, converting timestamps into dates, and engineering features such as
+  word_count, review_length, rating_class, and sentiment_label.
+
+- Velocity:
+  The downloaded dataset is processed as a batch file in this project, but the
+  real-world e-commerce use case is naturally high velocity. Online retailers
+  receive new reviews continuously as customers purchase and evaluate products.
+  In a production system, the same architecture could be extended so that new
+  JSON review files arrive hourly or daily in the HDFS landing zone. Spark jobs
+  could then process only new partitions and update Hive tables and gold
+  summaries incrementally. Velocity matters because business teams need timely
+  signals: a sudden increase in negative reviews can indicate a product defect,
+  delivery problem, counterfeit issue, or supplier quality change. Even though
+  this implementation uses batch processing, it is structured in layers that
+  can support repeated scheduled runs.
+
+- Veracity and quality:
+  Big Data is not valuable simply because it is large. It must also be trusted.
+  The raw reviews include missing text, invalid ratings, duplicate review keys,
+  and negative helpful-vote anomalies. The project therefore includes data
+  quality checks and quarantine handling. Invalid rows are written to a
+  quarantine path instead of being silently deleted. Quality metrics are saved
+  to output/metrics/data_quality_metrics.json, and a human-readable quality
+  report is saved to output/reports/quality_report.txt. This makes the pipeline
+  auditable and supports responsible decision-making.
+
+- Ethical issues:
+  Review datasets can include user identifiers, behavioural signals, opinions,
+  and timestamps. Even if the data is public or research-oriented, it should
+  still be handled carefully. The project avoids committing the full raw data
+  to GitHub, focuses reporting on aggregate product and sentiment patterns, and
+  avoids exposing individual user-level behaviour in the final outputs. Ethical
+  use also requires caution with machine learning results. A sentiment model
+  can misclassify sarcasm, mixed reviews, short reviews, or domain-specific
+  language. Therefore, predictions should support human analysis rather than
+  automatically penalising products, sellers, or users without review. Bias is
+  another concern because customers who leave reviews may not represent all
+  buyers. Positive and negative reviews may also be imbalanced, which can
+  affect model performance and business interpretation.
+
+The deeper implication is that Big Data engineering is not only about scaling
+storage and computation. It is also about designing trustworthy, repeatable,
+and ethically responsible pipelines that turn large raw data into useful
+business evidence.
+
+The business value of Big Data is that it allows organisations to convert very
+large operational datasets into decisions. In e-commerce, Big Data helps
+companies understand customer satisfaction, detect product quality problems,
+rank products, improve recommendations, monitor seller performance, and support
+automated sentiment analysis. Instead of relying on a small sample of reviews,
+a retailer can analyse millions of customer opinions and identify patterns that
+would not be visible manually.
+
+The project uses Hadoop HDFS as the storage layer, Hive as the metastore and
+SQL access layer, Spark as the transformation and machine learning engine, and
+Docker Compose as the local runtime environment. Python scripts under the
+src/amazon_reviews_pipeline package provide reusable ingestion, validation,
+processing, analytics, and ML modules. The project is orchestrated through a
+Makefile and a common pipeline entry point.
+
+The implementation is not just a collection of notebooks. It includes reusable
+source code, configuration files, shell scripts, Hive DDL files, Hive query
+files, local output folders, and reproducible commands. This makes the project
+runnable and reviewable from GitHub.
+
+
+2. Problem definition and business context
+
+The chosen industry domain is e-commerce and online retail. This domain is a
+strong fit for Big Data because online marketplaces generate large amounts of
+customer behaviour data, including product views, purchases, ratings, review
+text, helpful votes, timestamps, and seller interactions. Customer reviews are
+especially valuable because they contain direct feedback about product quality,
+delivery experience, satisfaction, and dissatisfaction.
+
+Online retail platforms depend heavily on customer reviews. Reviews influence
+buyer trust, product ranking, product quality decisions, seller performance,
+and customer support priorities. However, review datasets are usually too large
+for manual inspection. They also contain duplicates, missing fields, invalid
+values, inconsistent text, and mixed sentiment. A reliable big data pipeline is
+therefore needed to convert raw review records into useful analytical and
+machine learning outputs.
+
+The business problem addressed by this project is:
+
+How can a large volume of raw Amazon Office Products reviews be stored,
+cleaned, validated, analysed, and used to train a sentiment classification
+model in a reproducible big data environment?
+
+The project supports the following business questions:
+
+- How many reviews are available after cleaning?
+- What is the distribution of ratings?
+- What proportion of reviews are positive, neutral, or negative?
+- Which products receive the most reviews?
+- Which products have low average ratings?
+- How do verified purchases compare with non-verified purchases?
+- How do review volumes change across years and months?
+- Can review text be used to predict positive or negative sentiment?
+
+The real-world use case is an online retailer or marketplace analytics team
+building a review intelligence platform. Such a platform can ingest raw
+reviews, store them in distributed storage, clean and validate them, create
+Hive tables for analysts, generate gold summary outputs for reporting, and
+train a model that predicts sentiment from review text. Business users could
+then identify products with poor sentiment, monitor review trends over time,
+compare verified and non-verified purchases, and prioritise products that need
+quality investigation.
+
+Amazon Office Products reviews fit this problem because the category contains
+millions of real customer reviews for products such as printers, stationery,
+office electronics, paper supplies, organisational tools, and work equipment.
+These products are purchased by both individuals and businesses, so their
+reviews contain useful signals about reliability, usability, durability,
+delivery, and value for money. The dataset also includes enough structure for
+analytics and enough text for machine learning.
+
+The local raw dataset used in this project is above 5 GB. The verified file is:
+
+data/raw/Office_Products.jsonl
+
+Its size during verification was approximately 5.4 GB, with 12,845,712 raw
+review records. This confirms that the project uses a dataset large enough to
+justify distributed storage and processing rather than a small spreadsheet-style
+workflow.
+
+The main technologies used are:
+
+- Hadoop: distributed big data ecosystem foundation.
+- HDFS: distributed storage for raw, cleaned, quarantine, gold, model, and
+  metrics outputs.
+- Spark: distributed processing engine for cleaning, feature engineering,
+  validation, gold-table generation, and machine learning.
+- Hive: SQL schema layer and metastore for raw and cleaned external tables.
+- Spark MLlib: machine learning library used for text sentiment classification.
+- Docker Compose: local orchestration for Hadoop, Hive, Spark, and supporting
+  services.
+- Airflow: a DAG scaffold is included under dags/ for production-style
+  orchestration design, although the verified local run uses Makefile and
+  Python pipeline commands.
+
+The resulting pipeline can help an e-commerce analyst, product manager, or
+marketplace operations team identify customer satisfaction patterns, detect
+low-performing products, and prepare text data for automated sentiment
+classification.
+
+Ethical issues also matter in this use case. Review data can include user
+identifiers and behavioural signals, so the pipeline should avoid exposing
+personal information unnecessarily. Access to raw data should be controlled,
+large raw files should not be committed to GitHub, and reporting should focus
+on aggregated product and sentiment patterns rather than individual users.
+Model outputs should also be interpreted carefully because sentiment models can
+make mistakes, especially when reviews contain sarcasm, mixed opinions, or
+domain-specific language.
+
+
+3. Dataset description
+
+The dataset used in this project is the Amazon Reviews 2023 dataset from the
+McAuley Lab collection. The selected category is Office Products. The local raw
+file used by the project is:
+
+data/raw/Office_Products.jsonl
+
+The file is JSON Lines format, where each line is one review record. During
+verification, the raw file contained approximately 5.4 GB of data and
+12,845,712 review records.
+
+The raw schema used by the Spark ingestion and validation code includes:
+
+- rating: numeric customer rating
+- title: review title
+- text: review body
+- asin: product identifier
+- parent_asin: parent product identifier
+- user_id: reviewer identifier
+- timestamp: review timestamp in milliseconds
+- helpful_vote: number of helpful votes
+- verified_purchase: boolean purchase verification flag
+- category: product category
+
+The dataset is suitable for big data processing because it has high row volume,
+semi-structured JSON input, text fields, categorical fields, numeric fields,
+and timestamp data. It also supports both descriptive analytics and supervised
+machine learning.
+
+
+4. Environment setup
+
+The project uses Docker Compose to run a local big data stack. The main runtime
+services are:
+
+- Hadoop NameNode
+- Hadoop DataNode
+- YARN ResourceManager
+- YARN NodeManager
+- Spark master
+- Spark worker
+- Hive metastore
+- HiveServer2
+- PostgreSQL backing database for Hive metastore
+- Hadoop history server
+
+The environment is defined in docker-compose.yml. Supporting Hadoop, Hive, and
+Spark configuration files are stored under configs/ and hive/.
+
+The project provides Makefile targets for repeatable execution:
+
+- make start: start Docker services
+- make stop: stop Docker services
+- make check: check Hadoop, Hive, and Spark readiness
+- make upload: upload raw data to HDFS
+- make tables: create Hive database and tables
+- make transform: run Spark bronze-to-silver cleaning
+- make quality: run Spark data quality checks
+- make analysis: run Hive SQL analysis
+- make train: train and evaluate the sentiment model
+- make validate: compile Python pipeline files
+- make test: run pytest tests
+
+Python dependencies are listed in requirements.txt and pyproject.toml. The
+Spark container uses a custom image under docker/spark/ so that runtime
+dependencies such as numpy are available inside Spark. The project also uses uv
+for Python dependency management.
+
+Important configuration files include:
+
+- configs/dev.toml
+- configs/dev.yaml
+- configs/spark_config.yaml
+- configs/hdfs_paths.yaml
+- configs/data_quality_rules.yaml
+- configs/hadoop.env
+
+The project avoids hardcoding important paths in every script by centralising
+runtime settings in configs/dev.toml.
+
+
+5. System architecture
+
+The pipeline follows a layered lakehouse-style design:
+
+Local raw data
+-> HDFS landing/bronze zone
+-> Hive raw external table
+-> Spark bronze-to-silver processing
+-> HDFS silver Parquet zone
+-> Hive cleaned external table
+-> Spark quality validation
+-> HDFS quarantine zone
+-> Spark silver-to-gold aggregations
+-> HDFS gold Parquet zone
+-> Hive SQL analysis
+-> Spark MLlib model training and evaluation
+-> Local metrics and prediction outputs
+
+The major project folders are:
+
+- configs/: environment and path configuration
+- docker/: custom Docker image definitions
+- hadoop/: HDFS setup and cleanup scripts
+- hive/ddl/: database and table DDL
+- hive/queries/: exploratory and business SQL
+- scripts/: orchestration shell scripts
+- src/amazon_reviews_pipeline/common/: shared config, logging, Spark, and pipeline utilities
+- src/amazon_reviews_pipeline/ingestion/: raw file validation and schema inference
+- src/amazon_reviews_pipeline/validation/: data quality checks
+- src/amazon_reviews_pipeline/processing/: bronze, silver, text cleaning, and feature engineering code
+- src/amazon_reviews_pipeline/analytics/: analytics and benchmark scripts
+- src/amazon_reviews_pipeline/ml/: training, evaluation, and prediction code
+- notebooks/: exploration and results notebooks
+- docs/: design, architecture, data dictionary, setup, and troubleshooting notes
+- output/: local generated metrics, reports, charts, and predictions
+- reports/: report material and screenshots
+- tests/: unit tests for key logic
+
+This architecture separates storage, schema management, processing logic,
+analytics, machine learning, and operational scripts. That separation makes the
+project easier to run, debug, and extend.
+
+
+6. HDFS storage design
+
+HDFS is used as the distributed storage layer. The project stores data in
+logical zones:
+
+- landing/bronze: raw uploaded JSONL data
+- silver: cleaned and feature-engineered Parquet data
+- quarantine: invalid review records
+- gold: business-ready aggregate tables
+- metrics: generated metric outputs
+- models: trained Spark MLlib model artifacts
+
+The verified HDFS paths include:
+
+- /user/bigdata/landing/amazon_reviews/reviews
+- /user/bigdata/processed/amazon_reviews/reviews_cleaned
+- /user/bigdata/amazon_reviews/quarantine/invalid_reviews
+- /user/bigdata/amazon_reviews/gold
+- /user/bigdata/amazon_reviews/models/sentiment_classifier
+
+The raw dataset is uploaded to HDFS as JSON Lines. The cleaned data is stored as
+Parquet because Parquet is columnar, compressed, splittable, and efficient for
+Spark and Hive analytical workloads.
+
+The silver table is partitioned by:
+
+- review_year
+- review_month
+
+Partitioning supports efficient time-based analysis and reduces unnecessary
+scans for queries or jobs that filter by year or month. During verification,
+the silver output contained review_year partitions from 1998 through 2023.
+
+Invalid records are not silently dropped. They are written to the quarantine
+path with invalid_reason values such as missing_review_text, invalid_rating,
+missing_product_id, invalid_timestamp, and negative_helpful_vote.
+
+
+7. Hive schema and table creation
+
+Hive is used for schema management and SQL access. The Hive DDL files are
+stored under hive/ddl/.
+
+The key DDL files are:
+
+- hive/ddl/01_create_database.sql
+- hive/ddl/02_create_bronze_table.sql
+- hive/ddl/03_create_silver_table.sql
+- hive/ddl/04_create_gold_tables.sql
+- hive/ddl/00_legacy_create_tables.sql
+
+The configured active DDL in configs/dev.toml is:
+
+hive/ddl/00_legacy_create_tables.sql
+
+The Hive database is:
+
+ecommerce_reviews
+
+The main Hive tables are:
+
+- raw_reviews
+- cleaned_reviews
+
+The raw table is an external table over the HDFS raw JSONL location. The
+cleaned table is an external table over the HDFS Parquet silver location. The
+cleaned_reviews table is partitioned by review_year and review_month.
+
+Important schema decisions include:
+
+- helpful_vote is stored as BIGINT to match Spark Parquet INT64 output.
+- review_ts stores the original timestamp value after renaming.
+- review_date stores the derived date.
+- sentiment_label stores numeric sentiment classes.
+- rating_class stores readable sentiment classes.
+- review_length and word_count support text analytics.
+- verified_purchase_int supports ML and aggregation workflows.
+
+The table creation flow was verified with:
+
+make tables
+
+This successfully created and repaired the Hive metadata for the cleaned
+partitioned table.
+
+
+8. Spark data processing
+
+Spark is the main distributed processing engine. The central transformation is
+implemented in:
+
+src/amazon_reviews_pipeline/processing/bronze_to_silver.py
+
+The job reads raw JSONL from HDFS using an explicit Spark schema. It then
+performs validation, text cleaning, feature engineering, deduplication, and
+Parquet output.
+
+The bronze-to-silver job performs the following operations:
+
+- Read raw JSONL from HDFS.
+- Apply an explicit schema.
+- Detect invalid records.
+- Write invalid records to quarantine.
+- Drop duplicate reviews based on user_id, asin, timestamp, and text.
+- Trim review titles.
+- Lowercase review text.
+- Remove HTML fragments.
+- Collapse repeated whitespace.
+- Convert timestamp to review_date.
+- Create review_year.
+- Create review_month.
+- Create sentiment_label.
+- Create rating_class.
+- Create review_length.
+- Create word_count.
+- Create helpful_vote_bucket.
+- Create verified_purchase_int.
+- Save the cleaned result as Parquet.
+- Partition silver output by review_year and review_month.
+- Refresh the Hive cleaned_reviews table.
+
+The transformation was verified with:
+
+make transform
+
+Verified transformation metrics:
+
+- Raw input rows: 12,845,712
+- Cleaned output rows: 12,702,414
+- Invalid rows written to quarantine: 12,888
+- Duplicate review keys detected: 111,281
+
+Verified sentiment distribution after cleaning:
+
+- Positive label 1: 9,995,020
+- Neutral label 2: 790,645
+- Negative label 0: 1,916,749
+
+The data quality job is implemented in:
+
+src/amazon_reviews_pipeline/validation/data_quality_checks.py
+
+It checks:
+
+- Raw table is not empty.
+- Clean table is not empty.
+- Rating is between 1 and 5.
+- Review text is present.
+- asin is present.
+- user_id is present.
+- timestamp is present.
+- helpful_vote is not negative.
+- Duplicate review keys are detected.
+- Sentiment counts are generated.
+
+The quality job was verified with:
+
+make quality
+
+The silver-to-gold analytics job was also run directly with spark-submit. It
+completed successfully and wrote the following business-ready Parquet outputs
+under /user/bigdata/amazon_reviews/gold:
+
+- product_summary
+- rating_distribution
+- sentiment_distribution
+- monthly_review_trends
+- verified_purchase_summary
+- ml_training_data
+
+Verified quality metrics from output/metrics/data_quality_metrics.json:
+
+- total_records: 12,845,712
+- valid_records: 12,702,414
+- invalid_records: 143,298
+- null_review_text: 12,886
+- invalid_rating: 1
+- clean_invalid_rating: 0
+- duplicate_records: 111,281
+- invalid_timestamp: 0
+- negative_helpful_vote: 1
+- status: passed
+
+The local quality report is saved to:
+
+output/reports/quality_report.txt
+
+
+9. Hive exploratory analysis
+
+Hive SQL files are stored under hive/queries/.
+
+The query files include:
+
+- hive/queries/01_exploratory_analysis.sql
+- hive/queries/02_business_insights.sql
+- hive/queries/03_quality_checks.sql
+- hive/queries/04_spark_vs_hive_comparison.sql
+
+The SQL files are designed to answer exploratory and business questions such
+as:
+
+- Total number of reviews
+- Average rating
+- Rating distribution
+- Sentiment distribution
+- Verified purchase versus rating
+- Top reviewed products
+- Helpful reviews
+- Monthly review trends
+- Low-rated products
+- Products with high volume but poor sentiment
+
+During verification, Hive database and table creation worked. Spark was also
+able to read the Hive metastore tables successfully. However, the direct
+Beeline analysis command using Hive-on-MapReduce was not reliable on the local
+Docker environment for larger group-by workloads. The query started but stalled
+for an extended period. This is an environment execution limitation rather than
+a schema definition failure.
+
+Recommended improvement:
+
+Use Spark SQL for heavy analytical execution while keeping Hive as the
+metastore, or configure Hive to use Tez or a properly tuned execution engine.
+For a local Docker assignment environment, Spark SQL over Hive tables is more
+reliable than Hive-on-MapReduce.
+
+
+10. Spark vs Hive comparison
+
+The project includes a Spark versus Hive benchmark script:
+
+src/amazon_reviews_pipeline/analytics/spark_vs_hive_benchmark.py
+
+The benchmark objective is to compare runtimes for common analytical tasks:
+
+- Count total records
+- Group by rating
+- Group by verified_purchase
+- Group by year and month
+
+Conceptual comparison:
+
+Spark is generally better suited for this project because it runs distributed
+in-memory transformations, supports DataFrame APIs, integrates with MLlib, and
+efficiently reads Parquet. Spark also works well for iterative workflows such
+as feature engineering and model training.
+
+Hive is useful for schema definition, SQL access, and data warehouse-style
+queries. However, when backed by older MapReduce execution in a constrained
+Docker environment, Hive can be slower and less reliable for large aggregations
+than Spark SQL.
+
+Practical project finding:
+
+- Spark successfully processed the full 12.8 million row dataset.
+- Spark successfully produced quality metrics and ML results.
+- Hive table creation succeeded.
+- Direct Hive Beeline analysis over larger queries was not fully reliable in
+  the local runtime.
+
+This supports a common production pattern: use Hive as the metastore and SQL
+catalog, but use Spark for large-scale transformations, heavy analytics, and
+machine learning.
+
+
+11. Machine learning implementation
+
+The machine learning implementation is based on Spark MLlib. The relevant
+files are:
+
+- src/amazon_reviews_pipeline/ml/prepare_training_data.py
+- src/amazon_reviews_pipeline/ml/train_rating_classifier.py
+- src/amazon_reviews_pipeline/ml/train_sentiment_model.py
+- src/amazon_reviews_pipeline/ml/evaluate_model.py
+- src/amazon_reviews_pipeline/ml/predict_batch.py
+
+The ML task is sentiment classification using review text. The label is
+derived from rating:
+
+- rating >= 4: positive
+- rating <= 2: negative
+- rating = 3: neutral
+
+For binary model training, neutral reviews are excluded. The ML pipeline uses:
+
+- StringIndexer
+- RegexTokenizer
+- StopWordsRemover
+- HashingTF
+- IDF
+- LogisticRegression
+
+The pipeline reads from the Hive cleaned_reviews table. In dev mode, the
+training job uses a configurable bounded sample and partition filter so that
+the pipeline can complete on the local Docker Spark worker. The current dev
+settings are:
+
+- training_year_min: 2023
+- max_training_rows: 50,000
+- hashing_features: 2,048
+- max_iter: 3
+- train_fraction: 0.8
+- seed: 42
+
+This keeps the project runnable on the assignment machine while preserving the
+same code path used for full Spark MLlib training. For a production cluster,
+the max_training_rows limit can be removed or increased.
+
+The training command was verified with:
+
+make train
+
+The trained model was saved to HDFS:
+
+/user/bigdata/amazon_reviews/models/sentiment_classifier
+
+Sample predictions were written under:
+
+output/predictions/sample_predictions
+
+Model metrics were written to:
+
+output/metrics/ml_metrics.json
+output/reports/model_metrics.txt
+
+
+12. Model evaluation
+
+The model evaluation code computes:
+
+- Accuracy
+- Weighted precision
+- Weighted recall
+- F1-score
+- ROC AUC
+- Confusion matrix
+
+Verified evaluation metrics from output/metrics/ml_metrics.json:
+
+- accuracy: 0.8920612813370473
+- weightedPrecision: 0.8841171545277794
+- weightedRecall: 0.8920612813370474
+- f1: 0.8838880747073548
+- roc_auc: 0.908815184521702
+- training_sample_count: 50,000
+- train_count: 39,948
+- test_count: 10,052
+
+Verified confusion matrix:
+
+- label 0.0 predicted 0.0: 8,089
+- label 1.0 predicted 0.0: 800
+- label 0.0 predicted 1.0: 285
+- label 1.0 predicted 1.0: 878
+
+The model achieved strong overall performance on the dev-bounded 2023 sample.
+The ROC AUC of about 0.909 indicates good separation between negative and
+positive review classes. The F1-score of about 0.884 shows that the model
+balances precision and recall reasonably well.
+
+The confusion matrix shows that the model is stronger on the majority class in
+the sampled data. This is expected because Amazon review datasets often contain
+many more positive reviews than negative reviews.
+
+
+13. Results interpretation
+
+The cleaned data results show that the Office Products dataset is heavily
+positive overall. After cleaning:
+
+- Positive reviews: 9,995,020
+- Neutral reviews: 790,645
+- Negative reviews: 1,916,749
+
+This suggests that customers in the Office Products category generally leave
+positive ratings, but there is still a large negative review population that
+can be analysed for product quality issues.
+
+The quality metrics show that the raw dataset contains a relatively small
+number of directly invalid rows, but a larger number of records are removed
+when duplicates are considered. The project correctly avoids silently dropping
+bad records by writing invalid data to quarantine and recording quality
+metrics locally.
+
+The ML results show that review text contains enough signal to classify
+sentiment with useful accuracy. However, the class imbalance means that future
+work should include stronger balancing, threshold analysis, and per-class
+precision/recall reporting.
+
+The storage and processing results show that Parquet partitioning by year and
+month is appropriate for this dataset. It supports trend analysis and allows
+future jobs to filter on recent review periods.
+
+
+14. Reflection and recommendations
+
+What worked well:
+
+- Docker Compose provides a reproducible local Hadoop, Hive, and Spark stack.
+- HDFS stores raw, cleaned, quarantine, model, and gold outputs.
+- Hive external tables provide schema visibility over raw and cleaned data.
+- Spark successfully processes the full raw dataset.
+- Data quality checks generate clear metrics and a local quality report.
+- Invalid records are quarantined instead of being silently discarded.
+- Spark MLlib trains and evaluates a sentiment classifier.
+- The repository is modular and organized under src/.
+- Configuration is centralised under configs/.
+- Makefile targets make the project easier to run.
+
+Challenges encountered:
+
+- Spark MLlib requires numpy inside the Spark runtime container. This was fixed
+  by using a custom Spark Docker image with required dependencies.
+- Spark jobs submitted inside Docker need PYTHONPATH=/workspace/src so that the
+  package imports resolve correctly.
+- Hive schema must match Spark Parquet types exactly. helpful_vote needed to be
+  BIGINT because Spark wrote it as INT64.
+- Direct Hive-on-MapReduce execution was slow or stalled for large analytical
+  queries in the local Docker environment.
+- Full-data ML training is too heavy for a small local Spark worker, so dev
+  mode uses a bounded sample and partition pruning.
+
+Recommendations:
+
+- Add a Makefile target for silver_to_gold so gold generation is part of the
+  normal command flow.
+- Configure Hive with Tez or use Spark SQL for large analytical queries.
+- Add a sample dataset under data/sample so reviewers can run the pipeline
+  without downloading the full 5.4 GB file.
+- Add chart generation for rating distribution, sentiment distribution,
+  monthly trends, and confusion matrix.
+- Add model balancing or stratified sampling to improve minority-class
+  performance.
+- Add more integration tests around Docker, HDFS, Hive, and Spark commands.
+- Add CI checks for Python compilation, unit tests, and SQL file presence.
+- Store benchmark outputs in output/metrics/spark_vs_hive_benchmark.json.
+- Document hardware requirements for full-data runs.
+
+
+15. Conclusion
+
+This project successfully demonstrates a modular big data pipeline for Amazon
+Office Products reviews. It includes HDFS storage, Hive schema management,
+Spark data cleaning, quarantine handling, data quality metrics, gold analytics
+design, and Spark MLlib sentiment classification.
+
+The verified pipeline processed 12,845,712 raw records and produced 12,702,414
+cleaned records. It generated quality metrics, quarantined invalid records,
+created partitioned Parquet silver output, trained a sentiment model, saved the
+model to HDFS, and wrote evaluation metrics locally.
+
+The main remaining limitation is the direct Hive Beeline analysis execution in
+the local Docker environment. Hive table creation works, and Spark can read the
+Hive tables, but heavy Hive-on-MapReduce queries are not as reliable locally as
+Spark SQL. This limitation does not reduce the value of the project; it
+highlights an important engineering lesson about choosing the right execution
+engine for the workload.
+
+Overall, the project meets the core objectives of a reproducible big data
+engineering and machine learning workflow.
+
+
+16. Harvard reference list
+
+Apache Software Foundation, 2024. Apache Hadoop documentation. Available at:
+https://hadoop.apache.org/docs/ [Accessed 14 May 2026].
+
+Apache Software Foundation, 2024. Apache Hive documentation. Available at:
+https://hive.apache.org/ [Accessed 14 May 2026].
+
+Apache Software Foundation, 2024. Apache Spark documentation. Available at:
+https://spark.apache.org/docs/latest/ [Accessed 14 May 2026].
+
+Docker Inc., 2024. Docker Compose documentation. Available at:
+https://docs.docker.com/compose/ [Accessed 14 May 2026].
+
+McAuley Lab, 2023. Amazon Reviews 2023. Available at:
+https://amazon-reviews-2023.github.io/ [Accessed 14 May 2026].
+
+McAuley, J. and Yang, A., 2016. Addressing complex and subjective product-
+related queries with customer reviews. In: Proceedings of the 25th
+International Conference on World Wide Web. Montreal: International World Wide
+Web Conferences Steering Committee, pp. 625-635.
+
+Python Software Foundation, 2024. Python documentation. Available at:
+https://docs.python.org/3/ [Accessed 14 May 2026].
+
+Astral, 2024. uv documentation. Available at: https://docs.astral.sh/uv/
+[Accessed 14 May 2026].
+
+
+17. Appendices
+
+Appendix A: Key commands
+
+Start services:
+make start
+
+Check services:
+make check
+
+Upload raw data:
+make upload INPUT=data/raw/Office_Products.jsonl
+
+Create Hive tables:
+make tables
+
+Run Spark transform:
+make transform
+
+Run data quality checks:
+make quality
+
+Run Hive analysis:
+make analysis
+
+Train ML model:
+make train
+
+Run Python compilation validation:
+make validate
+
+Run tests:
+make test
+
+
+Appendix B: Verified service status
+
+The Docker stack includes:
+
+- amazon_reviews_namenode
+- amazon_reviews_datanode
+- amazon_reviews_resourcemanager
+- amazon_reviews_nodemanager
+- amazon_reviews_historyserver
+- amazon_reviews_hive_postgres
+- amazon_reviews_hive_metastore
+- amazon_reviews_hive_server
+- amazon_reviews_spark_master
+- amazon_reviews_spark_worker
+
+Service readiness was verified with:
+
+make check
+
+
+Appendix C: Verified transformation metrics
+
+Spark bronze-to-silver output:
+
+- input_rows: 12,845,712
+- output_rows: 12,702,414
+- invalid_rows: 12,888
+- duplicate_keys: 111,281
+
+Sentiment counts:
+
+- positive: 9,995,020
+- neutral: 790,645
+- negative: 1,916,749
+
+
+Appendix D: Verified data quality metrics
+
+Data quality metrics:
+
+- total_records: 12,845,712
+- valid_records: 12,702,414
+- invalid_records: 143,298
+- null_review_text: 12,886
+- invalid_rating: 1
+- clean_invalid_rating: 0
+- duplicate_records: 111,281
+- invalid_timestamp: 0
+- negative_helpful_vote: 1
+- status: passed
+
+
+Appendix E: Verified machine learning metrics
+
+Model metrics:
+
+- accuracy: 0.8920612813370473
+- weightedPrecision: 0.8841171545277794
+- weightedRecall: 0.8920612813370474
+- f1: 0.8838880747073548
+- roc_auc: 0.908815184521702
+- training_sample_count: 50,000
+- train_count: 39,948
+- test_count: 10,052
+
+
+Appendix F: Important output locations
+
+Local outputs:
+
+- output/metrics/data_quality_metrics.json
+- output/metrics/ml_metrics.json
+- output/reports/quality_report.txt
+- output/reports/model_metrics.txt
+- output/predictions/sample_predictions
+
+HDFS outputs:
+
+- /user/bigdata/landing/amazon_reviews/reviews
+- /user/bigdata/processed/amazon_reviews/reviews_cleaned
+- /user/bigdata/amazon_reviews/quarantine/invalid_reviews
+- /user/bigdata/amazon_reviews/gold/product_summary
+- /user/bigdata/amazon_reviews/gold/rating_distribution
+- /user/bigdata/amazon_reviews/gold/sentiment_distribution
+- /user/bigdata/amazon_reviews/gold/monthly_review_trends
+- /user/bigdata/amazon_reviews/gold/verified_purchase_summary
+- /user/bigdata/amazon_reviews/gold/ml_training_data
+- /user/bigdata/amazon_reviews/models/sentiment_classifier
+
+
+Appendix G: Repository structure evidence
+
+The project includes:
+
+- docker-compose.yml
+- requirements.txt
+- pyproject.toml
+- Makefile
+- configs/
+- hadoop/
+- hive/ddl/
+- hive/queries/
+- scripts/
+- notebooks/
+- docs/
+- src/amazon_reviews_pipeline/
+- tests/
+- output/
+- reports/
+
+
+Appendix H: Known limitations
+
+- The full raw dataset is large and should not be committed to GitHub.
+- A small data/sample JSONL file should be added for lightweight reviewer runs.
+- Hive Beeline analysis over large queries needs Tez, better tuning, or Spark
+  SQL execution.
+- ML training uses a dev-bounded sample locally; full-data training should be
+  run on a larger Spark cluster.
+- Chart outputs should be expanded for the final written submission.
+
+
+18. GitHub repository link
+
+https://github.com/Okemwag/amazon_reviews.git

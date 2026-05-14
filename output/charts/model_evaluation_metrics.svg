@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="410" viewBox="0 0 920 410">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#111827}.title{font-size:22px;font-weight:700}.label{font-size:13px}.small{font-size:11px;fill:#4b5563}.value{font-size:12px;font-weight:700}</style>
+<text x="30" y="40" class="title">Model Evaluation Metrics</text>
+<text x="30" y="101" class="label">Accuracy</text>
+<rect x="250" y="82" width="560" height="26" fill="#e5e7eb" rx="3"/>
+<rect x="250" y="82" width="499" height="26" fill="#059669" rx="3"/>
+<text x="826" y="101" class="value">0.892</text>
+<text x="30" y="159" class="label">Weighted precision</text>
+<rect x="250" y="140" width="560" height="26" fill="#e5e7eb" rx="3"/>
+<rect x="250" y="140" width="495" height="26" fill="#059669" rx="3"/>
+<text x="826" y="159" class="value">0.884</text>
+<text x="30" y="217" class="label">Weighted recall</text>
+<rect x="250" y="198" width="560" height="26" fill="#e5e7eb" rx="3"/>
+<rect x="250" y="198" width="499" height="26" fill="#059669" rx="3"/>
+<text x="826" y="217" class="value">0.892</text>
+<text x="30" y="275" class="label">F1-score</text>
+<rect x="250" y="256" width="560" height="26" fill="#e5e7eb" rx="3"/>
+<rect x="250" y="256" width="494" height="26" fill="#059669" rx="3"/>
+<text x="826" y="275" class="value">0.884</text>
+<text x="30" y="333" class="label">ROC AUC</text>
+<rect x="250" y="314" width="560" height="26" fill="#e5e7eb" rx="3"/>
+<rect x="250" y="314" width="508" height="26" fill="#059669" rx="3"/>
+<text x="826" y="333" class="value">0.909</text>
+</svg>
