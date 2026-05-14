@@ -9,6 +9,7 @@ from pathlib import Path
 import json
 
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 
 from amazon_reviews_pipeline.common.config_loader import load_config
 from amazon_reviews_pipeline.ml.evaluate_model import classification_metrics, confusion_matrix
@@ -41,16 +42,30 @@ def main() -> None:
     )
 
     model_path = config.get("hdfs", {}).get("sentiment_model_dir", MODEL_PATH)
-    df = prepare_training_frame(spark.table("ecommerce_reviews.cleaned_reviews"), include_neutral=False)
+    reviews = spark.table("ecommerce_reviews.cleaned_reviews")
+    training_year_min = int(ml_config.get("training_year_min", 0))
+    if training_year_min:
+        reviews = reviews.filter(f"review_year >= {training_year_min}")
 
-    if df.count() < 20:
+    df = prepare_training_frame(reviews, include_neutral=False)
+    seed = int(ml_config.get("seed", 42))
+    max_training_rows = int(ml_config.get("max_training_rows", 0))
+
+    source_count = None
+    if max_training_rows > 0:
+        df = df.limit(max_training_rows)
+    else:
+        source_count = df.count()
+
+    training_count = df.count()
+    if training_count < 20:
         train_df = df
         test_df = df
     else:
         train_df, test_df = split_train_test(
             df,
             train_fraction=float(ml_config.get("train_fraction", 0.8)),
-            seed=int(ml_config.get("seed", 42)),
+            seed=seed,
         )
 
     pipeline = build_sentiment_pipeline(
@@ -62,11 +77,20 @@ def main() -> None:
 
     metrics = classification_metrics(predictions)
     metrics["confusion_matrix"] = confusion_matrix(predictions)
+    if source_count is not None:
+        metrics["source_count"] = source_count
+    metrics["training_sample_count"] = training_count
     metrics["train_count"] = train_df.count()
     metrics["test_count"] = test_df.count()
 
     model.write().overwrite().save(model_path)
-    predictions.select("text", "sentiment_label", "label", "prediction", "probability").limit(1000).write.mode("overwrite").csv(PREDICTIONS_PATH, header=True)
+    predictions.select(
+        "text",
+        "sentiment_label",
+        "label",
+        "prediction",
+        F.col("probability").cast("string").alias("probability"),
+    ).limit(1000).write.mode("overwrite").csv(PREDICTIONS_PATH, header=True)
 
     METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_PATH.open("w", encoding="utf-8") as handle:

@@ -159,6 +159,8 @@ def ingest(config: PipelineConfig, input_file: Path) -> None:
     dataset_name = input_file.name.removesuffix(".jsonl.gz").removesuffix(".json.gz").removesuffix(".jsonl")
     manifest_path = manifest_dir / f"{dataset_name}_{ingested_at}.json"
     hdfs_file = f"{config.get('hdfs', 'landing_reviews_dir')}/{input_file.name}"
+    bronze_dir = config.values.get("hdfs", {}).get("bronze_reviews_dir", "")
+    bronze_file = f"{bronze_dir.rstrip('/')}/{input_file.name}" if bronze_dir else ""
     row_count, checksum = file_profile(input_file)
 
     manifest = {
@@ -167,6 +169,7 @@ def ingest(config: PipelineConfig, input_file: Path) -> None:
         "local_path": str(input_file),
         "workspace_path": workspace_path(input_file, root, workspace),
         "hdfs_path": hdfs_file,
+        "bronze_hdfs_path": bronze_file,
         "row_count": row_count,
         "byte_size": input_file.stat().st_size,
         "sha256": checksum,
@@ -179,9 +182,14 @@ def ingest(config: PipelineConfig, input_file: Path) -> None:
         f"hdfs dfs -mkdir -p {shlex.quote(config.get('hdfs', 'landing_reviews_dir'))}",
         f"hdfs dfs -mkdir -p {shlex.quote(config.get('hdfs', 'manifest_dir'))}",
         f"hdfs dfs -mkdir -p {shlex.quote(config.get('hdfs', 'warehouse_dir'))}",
+        *( [f"hdfs dfs -mkdir -p {shlex.quote(bronze_dir)}"] if bronze_dir else [] ),
         "hdfs dfs -chmod -R 777 /user || true",
         "hdfs dfs -put -f "
         f"{shlex.quote(manifest['workspace_path'])} {shlex.quote(hdfs_file)}",
+        *( [
+            "hdfs dfs -put -f "
+            f"{shlex.quote(manifest['workspace_path'])} {shlex.quote(bronze_file)}"
+        ] if bronze_file else [] ),
         "hdfs dfs -put -f "
         f"{shlex.quote(workspace_path(manifest_path, root, workspace))} "
         f"{shlex.quote(config.get('hdfs', 'manifest_dir') + '/' + manifest_path.name)}",
@@ -206,6 +214,7 @@ def spark_submit(config: PipelineConfig, job_path: str) -> None:
     docker_exec_as_root(spark_container, "mkdir -p /workspace/output && chmod -R a+rwX /workspace/output")
     docker_exec(
         spark_container,
+        "PYTHONPATH=/workspace/src "
         f"/opt/spark/bin/spark-submit --master {shlex.quote(master)} {shlex.quote(job_path)}",
     )
 

@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 def sentiment_label(rating: float | int | None) -> int | None:
@@ -52,7 +52,7 @@ def helpful_vote_bucket(votes: int | None) -> str:
 def review_date_parts(timestamp_ms: int | None) -> dict[str, int | str | None]:
     if timestamp_ms is None:
         return {"review_date": None, "review_year": None, "review_month": None}
-    dt = datetime.fromtimestamp(int(timestamp_ms) / 1000, tz=UTC)
+    dt = datetime.fromtimestamp(int(timestamp_ms) / 1000, tz=timezone.utc)
     return {"review_date": dt.date().isoformat(), "review_year": dt.year, "review_month": dt.month}
 
 

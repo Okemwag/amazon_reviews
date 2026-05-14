@@ -13,11 +13,15 @@ documentation. This module keeps the rest of the code from hardcoding paths.
 
 from __future__ import annotations
 
-import tomllib
 from pathlib import Path
 from typing import Any
 
 from amazon_reviews_pipeline.common.constants import DEFAULT_CONFIG_PATH
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.8 in the Spark image.
+    tomllib = None
 
 
 def _parse_scalar(value: str) -> Any:
@@ -53,11 +57,30 @@ def _load_simple_yaml(path: Path) -> dict[str, Any]:
     return config
 
 
+def _load_simple_toml(path: Path) -> dict[str, Any]:
+    config: dict[str, Any] = {}
+    section: dict[str, Any] | None = None
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            section_name = line[1:-1].strip()
+            section = config.setdefault(section_name, {})
+            continue
+        if "=" in line and section is not None:
+            key, value = line.split("=", 1)
+            section[key.strip()] = _parse_scalar(value)
+    return config
+
+
 def load_config(path: str | Path = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
     config_path = Path(path)
     if config_path.suffix == ".toml":
-        with config_path.open("rb") as handle:
-            return tomllib.load(handle)
+        if tomllib is not None:
+            with config_path.open("rb") as handle:
+                return tomllib.load(handle)
+        return _load_simple_toml(config_path)
     if config_path.suffix in {".yaml", ".yml"}:
         return _load_simple_yaml(config_path)
     raise ValueError(f"Unsupported config format: {config_path}")

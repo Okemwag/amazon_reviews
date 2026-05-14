@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import sys
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from time import perf_counter
 from typing import Iterator
 
@@ -29,7 +29,7 @@ def get_logger(name: str) -> logging.Logger:
 
 @contextmanager
 def log_job(logger: logging.Logger, job_name: str, **context: object) -> Iterator[None]:
-    started = datetime.now(UTC).isoformat()
+    started = datetime.now(timezone.utc).isoformat()
     start = perf_counter()
     logger.info("job_started name=%s started_at=%s context=%s", job_name, started, context)
     try:
@@ -38,5 +38,5 @@ def log_job(logger: logging.Logger, job_name: str, **context: object) -> Iterato
         logger.exception("job_failed name=%s elapsed_seconds=%.2f", job_name, perf_counter() - start)
         raise
     finally:
-        finished = datetime.now(UTC).isoformat()
+        finished = datetime.now(timezone.utc).isoformat()
         logger.info("job_finished name=%s finished_at=%s elapsed_seconds=%.2f", job_name, finished, perf_counter() - start)

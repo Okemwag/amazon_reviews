@@ -52,4 +52,4 @@ validate:
 	PYTHONPATH=src python3 -m py_compile src/amazon_reviews_pipeline/common/pipeline.py src/amazon_reviews_pipeline/processing/*.py src/amazon_reviews_pipeline/validation/*.py src/amazon_reviews_pipeline/ml/*.py
 
 test:
-	PYTHONPATH=src pytest tests/
+	PYTHONPATH=src uv run pytest tests/
