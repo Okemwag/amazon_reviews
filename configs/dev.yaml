@@ -1,0 +1,16 @@
+project_name: amazon_reviews
+local_raw_dataset: data/raw/Office_Products.jsonl
+hive_database: ecommerce_reviews
+hive_raw_table: raw_reviews
+hive_cleaned_table: cleaned_reviews
+hdfs_bronze_path: /user/bigdata/amazon_reviews/bronze/office_products
+hdfs_silver_path: /user/bigdata/amazon_reviews/silver/office_products_cleaned
+hdfs_gold_path: /user/bigdata/amazon_reviews/gold
+hdfs_quarantine_path: /user/bigdata/amazon_reviews/quarantine/invalid_reviews
+hdfs_metrics_path: /user/bigdata/amazon_reviews/metrics
+hdfs_models_path: /user/bigdata/amazon_reviews/models/sentiment_classifier
+spark_master: spark://spark-master:7077
+spark_shuffle_partitions: 48
+spark_parquet_compression: snappy
+ml_seed: 42
+ml_train_fraction: 0.8

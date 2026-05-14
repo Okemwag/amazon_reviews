@@ -1,0 +1,11 @@
+{
+  "dataset": "amazon_reviews_2023",
+  "source_file": "Office_Products.jsonl",
+  "local_path": "/home/okemwag/DataProjects/amazon_reviews/data/raw/Office_Products.jsonl",
+  "workspace_path": "/workspace/data/raw/Office_Products.jsonl",
+  "hdfs_path": "/user/bigdata/landing/amazon_reviews/reviews/Office_Products.jsonl",
+  "row_count": 12845712,
+  "byte_size": 5776792834,
+  "sha256": "82cc49670098220a314d398ceff6434599b54c27af5fa00ab9c0b4af9d9d9011",
+  "ingested_at_utc": "20260509T183458Z"
+}

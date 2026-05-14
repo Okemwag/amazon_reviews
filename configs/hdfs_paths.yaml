@@ -1,6 +1,12 @@
 warehouse_dir: /user/hive/warehouse
 landing_reviews_dir: /user/bigdata/landing/amazon_reviews/reviews
+bronze_reviews_dir: /user/bigdata/amazon_reviews/bronze/office_products
 manifest_dir: /user/bigdata/manifests/amazon_reviews
 processed_reviews_dir: /user/bigdata/processed/amazon_reviews/reviews_cleaned
+silver_reviews_dir: /user/bigdata/amazon_reviews/silver/office_products_cleaned
+gold_dir: /user/bigdata/amazon_reviews/gold
+quarantine_dir: /user/bigdata/amazon_reviews/quarantine/invalid_reviews
 quality_dir: /user/bigdata/quality/amazon_reviews
+metrics_dir: /user/bigdata/amazon_reviews/metrics
 models_dir: /user/bigdata/models/amazon_reviews
+sentiment_model_dir: /user/bigdata/amazon_reviews/models/sentiment_classifier

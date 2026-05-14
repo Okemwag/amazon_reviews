@@ -128,7 +128,9 @@ services:
       - ./hive/hive-site.xml:/opt/hive/conf/hive-site.xml:ro
 
   spark-master:
-    image: apache/spark:3.5.3
+    build:
+      context: ./docker/spark
+    image: amazon-reviews-spark:3.5.3
     container_name: amazon_reviews_spark_master
     hostname: spark-master
     restart: unless-stopped
@@ -160,7 +162,9 @@ services:
       - ./hive/hive-site.xml:/opt/spark/conf/hive-site.xml:ro
 
   spark-worker:
-    image: apache/spark:3.5.3
+    build:
+      context: ./docker/spark
+    image: amazon-reviews-spark:3.5.3
     container_name: amazon_reviews_spark_worker
     hostname: spark-worker
     restart: unless-stopped

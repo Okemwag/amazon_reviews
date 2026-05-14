@@ -18,10 +18,16 @@ processed_dir = "output/reports"
 [hdfs]
 warehouse_dir = "/user/hive/warehouse"
 landing_reviews_dir = "/user/bigdata/landing/amazon_reviews/reviews"
+bronze_reviews_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/bronze/office_products"
 manifest_dir = "/user/bigdata/manifests/amazon_reviews"
 processed_reviews_dir = "/user/bigdata/processed/amazon_reviews/reviews_cleaned"
+silver_reviews_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/silver/office_products_cleaned"
+gold_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/gold"
+quarantine_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/quarantine/invalid_reviews"
 quality_dir = "/user/bigdata/quality/amazon_reviews"
+metrics_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/metrics"
 models_dir = "/user/bigdata/models/amazon_reviews"
+sentiment_model_dir = "hdfs://namenode:9000/user/bigdata/amazon_reviews/models/sentiment_classifier"
 
 [hive]
 database = "ecommerce_reviews"
@@ -29,9 +35,17 @@ raw_table = "raw_reviews"
 cleaned_table = "cleaned_reviews"
 
 [spark]
+shuffle_partitions = "48"
+parquet_compression = "snappy"
 transform_job = "/workspace/src/amazon_reviews_pipeline/processing/bronze_to_silver.py"
 quality_job = "/workspace/src/amazon_reviews_pipeline/validation/data_quality_checks.py"
 train_job = "/workspace/src/amazon_reviews_pipeline/ml/train_sentiment_model.py"
+
+[ml]
+seed = "42"
+train_fraction = "0.8"
+hashing_features = "10000"
+max_iter = "10"
 
 [sql]
 ddl = "/workspace/hive/ddl/00_legacy_create_tables.sql"

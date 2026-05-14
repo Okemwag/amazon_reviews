@@ -1,0 +1,11 @@
+raw_count=12845712
+clean_count=12845711
+invalid_rating_count=1
+raw_invalid_rating_count=1
+clean_invalid_rating_count=0
+missing_rating=0
+missing_text=0
+missing_asin=0
+missing_user_id=0
+sentiment_counts={'1': 10103878, '0': 2741833}
+status=passed

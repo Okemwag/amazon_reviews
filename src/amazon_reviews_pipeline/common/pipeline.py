@@ -1,3 +1,10 @@
+# Copyright (c) 2026 Maureen Chemutai.
+# All rights reserved.
+#
+# This source code is proprietary and confidential. Unauthorized copying,
+# modification, distribution, or use of this file, via any medium, is strictly
+# prohibited without prior written permission from Maureen Chemutai.
+
 from __future__ import annotations
 
 import argparse
@@ -40,6 +47,10 @@ def run_command(command: list[str], *, check: bool = True) -> subprocess.Complet
 
 def docker_exec(container: str, command: str) -> None:
     run_command(["docker", "exec", container, "bash", "-c", command])
+
+
+def docker_exec_as_root(container: str, command: str) -> None:
+    run_command(["docker", "exec", "--user", "root", container, "bash", "-c", command])
 
 
 def docker_command(container: str, command: str) -> list[str]:
@@ -192,6 +203,7 @@ def spark_submit(config: PipelineConfig, job_path: str) -> None:
     wait_for_spark(config)
     spark_container = config.get("docker", "spark_container")
     master = config.get("docker", "spark_master")
+    docker_exec_as_root(spark_container, "mkdir -p /workspace/output && chmod -R a+rwX /workspace/output")
     docker_exec(
         spark_container,
         f"/opt/spark/bin/spark-submit --master {shlex.quote(master)} {shlex.quote(job_path)}",

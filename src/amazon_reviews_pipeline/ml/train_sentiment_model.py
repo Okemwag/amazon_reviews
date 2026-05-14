@@ -1,14 +1,25 @@
-from pathlib import Path
+# Copyright (c) 2026 Maureen Chemutai.
+# All rights reserved.
+#
+# This source code is proprietary and confidential. Unauthorized copying,
+# modification, distribution, or use of this file, via any medium, is strictly
+# prohibited without prior written permission from Maureen Chemutai.
 
-from pyspark.ml import Pipeline
-from pyspark.ml.classification import LogisticRegression
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-from pyspark.ml.feature import HashingTF, IDF, StopWordsRemover, Tokenizer
+from pathlib import Path
+import json
+
 from pyspark.sql import SparkSession
 
+from amazon_reviews_pipeline.common.config_loader import load_config
+from amazon_reviews_pipeline.ml.evaluate_model import classification_metrics, confusion_matrix
+from amazon_reviews_pipeline.ml.prepare_training_data import prepare_training_frame, split_train_test
+from amazon_reviews_pipeline.ml.train_rating_classifier import build_sentiment_pipeline
 
-MODEL_PATH = "hdfs://namenode:9000/user/bigdata/models/amazon_reviews/review_sentiment_model"
+CONFIG_PATH = "/workspace/configs/dev.toml"
+MODEL_PATH = "hdfs://namenode:9000/user/bigdata/amazon_reviews/models/sentiment_classifier"
 METRICS_PATH = Path("/workspace/output/reports/model_metrics.txt")
+JSON_METRICS_PATH = Path("/workspace/output/metrics/ml_metrics.json")
+PREDICTIONS_PATH = "/workspace/output/predictions/sample_predictions"
 
 
 def evaluate(predictions, metric_name: str) -> float:
@@ -21,66 +32,54 @@ def evaluate(predictions, metric_name: str) -> float:
 
 
 def main() -> None:
+    config = load_config(CONFIG_PATH)
+    ml_config = config.get("ml", {})
     spark = (
         SparkSession.builder.appName("AmazonReviewSentimentModel")
         .enableHiveSupport()
         .getOrCreate()
     )
 
-    df = (
-        spark.table("ecommerce_reviews.cleaned_reviews")
-        .select("text", "sentiment_label")
-        .dropna()
-    )
+    model_path = config.get("hdfs", {}).get("sentiment_model_dir", MODEL_PATH)
+    df = prepare_training_frame(spark.table("ecommerce_reviews.cleaned_reviews"), include_neutral=False)
 
     if df.count() < 20:
         train_df = df
         test_df = df
     else:
-        train_df, test_df = df.randomSplit([0.8, 0.2], seed=42)
+        train_df, test_df = split_train_test(
+            df,
+            train_fraction=float(ml_config.get("train_fraction", 0.8)),
+            seed=int(ml_config.get("seed", 42)),
+        )
 
-    pipeline = Pipeline(
-        stages=[
-            Tokenizer(inputCol="text", outputCol="words"),
-            StopWordsRemover(inputCol="words", outputCol="filtered_words"),
-            HashingTF(inputCol="filtered_words", outputCol="raw_features", numFeatures=10000),
-            IDF(inputCol="raw_features", outputCol="features"),
-            LogisticRegression(
-                featuresCol="features",
-                labelCol="sentiment_label",
-                maxIter=10,
-                regParam=0.01,
-            ),
-        ]
+    pipeline = build_sentiment_pipeline(
+        num_features=int(ml_config.get("hashing_features", 10000)),
+        max_iter=int(ml_config.get("max_iter", 10)),
     )
     model = pipeline.fit(train_df)
     predictions = model.transform(test_df)
 
-    metrics = {
-        "accuracy": evaluate(predictions, "accuracy"),
-        "weighted_precision": evaluate(predictions, "weightedPrecision"),
-        "weighted_recall": evaluate(predictions, "weightedRecall"),
-        "f1": evaluate(predictions, "f1"),
-    }
-    confusion_rows = predictions.groupBy("sentiment_label", "prediction").count()
+    metrics = classification_metrics(predictions)
+    metrics["confusion_matrix"] = confusion_matrix(predictions)
+    metrics["train_count"] = train_df.count()
+    metrics["test_count"] = test_df.count()
 
-    model.write().overwrite().save(MODEL_PATH)
+    model.write().overwrite().save(model_path)
+    predictions.select("text", "sentiment_label", "label", "prediction", "probability").limit(1000).write.mode("overwrite").csv(PREDICTIONS_PATH, header=True)
 
     METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_PATH.open("w", encoding="utf-8") as handle:
         for name, value in metrics.items():
-            handle.write(f"{name}: {value:.4f}\n")
-        handle.write("\nConfusion matrix counts:\n")
-        for row in confusion_rows.collect():
-            handle.write(
-                f"label={row['sentiment_label']}, "
-                f"prediction={row['prediction']}, count={row['count']}\n"
-            )
+            handle.write(f"{name}: {value}\n")
+
+    JSON_METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    JSON_METRICS_PATH.write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
 
     print("Model metrics:")
     for name, value in metrics.items():
-        print(f"{name}: {value:.4f}")
-    print(f"Saved model to {MODEL_PATH}")
+        print(f"{name}: {value}")
+    print(f"Saved model to {model_path}")
     print(f"Saved metrics to {METRICS_PATH}")
 
     spark.stop()
