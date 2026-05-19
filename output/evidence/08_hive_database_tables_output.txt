@@ -1,0 +1,43 @@
+$ docker exec amazon_reviews_hive_server beeline -u jdbc:hive2://localhost:10000 -e SHOW\ DATABASES\;\ USE\ ecommerce_reviews\;\ SHOW\ TABLES\;\ DESCRIBE\ cleaned_reviews\;
+
++--------------------+
+|   database_name    |
++--------------------+
+| default            |
+| ecommerce_reviews  |
++--------------------+
++------------------+
+|     tab_name     |
++------------------+
+| cleaned_reviews  |
+| raw_reviews      |
++------------------+
++--------------------------+-----------------------+-----------------------+
+|         col_name         |       data_type       |        comment        |
++--------------------------+-----------------------+-----------------------+
+| rating                   | double                |                       |
+| title                    | string                |                       |
+| text                     | string                |                       |
+| asin                     | string                |                       |
+| parent_asin              | string                |                       |
+| user_id                  | string                |                       |
+| review_ts                | bigint                |                       |
+| helpful_vote             | bigint                |                       |
+| verified_purchase        | boolean               |                       |
+| category                 | string                |                       |
+| sentiment_label          | int                   |                       |
+| rating_class             | string                |                       |
+| review_length            | int                   |                       |
+| word_count               | int                   |                       |
+| helpful_vote_bucket      | string                |                       |
+| verified_purchase_int    | int                   |                       |
+| review_date              | string                |                       |
+| review_year              | int                   |                       |
+| review_month             | int                   |                       |
+|                          | NULL                  | NULL                  |
+| # Partition Information  | NULL                  | NULL                  |
+| # col_name               | data_type             | comment               |
+|                          | NULL                  | NULL                  |
+| review_year              | int                   |                       |
+| review_month             | int                   |                       |
++--------------------------+-----------------------+-----------------------+

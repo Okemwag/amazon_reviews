@@ -1,0 +1,13 @@
+$ docker compose ps
+
+NAME                             IMAGE                                                    COMMAND                  SERVICE                     CREATED       STATUS                 PORTS
+amazon_reviews_datanode          bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8          "/entrypoint.sh /run…"   datanode                    4 days ago    Up 3 hours (healthy)   9864/tcp
+amazon_reviews_historyserver     bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8     "/entrypoint.sh /run…"   historyserver               4 days ago    Up 3 hours (healthy)   0.0.0.0:8188->8188/tcp, [::]:8188->8188/tcp
+amazon_reviews_hive_metastore    bde2020/hive:2.3.2-postgresql-metastore                  "entrypoint.sh /opt/…"   hive-metastore              4 days ago    Up 3 hours             10000/tcp, 0.0.0.0:9083->9083/tcp, [::]:9083->9083/tcp, 10002/tcp
+amazon_reviews_hive_postgres     bde2020/hive-metastore-postgresql:2.3.0                  "/docker-entrypoint.…"   hive-metastore-postgresql   4 days ago    Up 3 hours             5432/tcp
+amazon_reviews_hive_server       bde2020/hive:2.3.2-postgresql-metastore                  "entrypoint.sh /bin/…"   hive-server                 4 days ago    Up 3 hours             0.0.0.0:10000->10000/tcp, [::]:10000->10000/tcp, 0.0.0.0:10002->10002/tcp, [::]:10002->10002/tcp
+amazon_reviews_namenode          bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8          "/entrypoint.sh /run…"   namenode                    4 days ago    Up 3 hours (healthy)   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp, 0.0.0.0:9870->9870/tcp, [::]:9870->9870/tcp
+amazon_reviews_nodemanager       bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8       "/entrypoint.sh /run…"   nodemanager                 4 days ago    Up 3 hours (healthy)   8042/tcp
+amazon_reviews_resourcemanager   bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8   "/entrypoint.sh /run…"   resourcemanager             4 days ago    Up 3 hours (healthy)   0.0.0.0:8088->8088/tcp, [::]:8088->8088/tcp
+amazon_reviews_spark_master      amazon-reviews-spark:3.5.3                               "/opt/entrypoint.sh …"   spark-master                8 hours ago   Up 3 hours             0.0.0.0:7077->7077/tcp, [::]:7077->7077/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+amazon_reviews_spark_worker      amazon-reviews-spark:3.5.3                               "/opt/entrypoint.sh …"   spark-worker                8 hours ago   Up 3 hours             

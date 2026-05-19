@@ -1,0 +1,14 @@
+$ sed -n 1\,220p /home/okemwag/DataProjects/amazon_reviews/output/metrics/data_quality_metrics.json
+
+{
+  "total_records": 12845712,
+  "valid_records": 12702414,
+  "invalid_records": 143298,
+  "null_review_text": 12886,
+  "invalid_rating": 1,
+  "clean_invalid_rating": 0,
+  "duplicate_records": 111281,
+  "invalid_timestamp": 0,
+  "negative_helpful_vote": 1,
+  "status": "passed"
+}

@@ -1,0 +1,4 @@
+$ docker exec amazon_reviews_namenode hdfs dfs -ls -h /user/bigdata/landing/amazon_reviews/reviews
+
+Found 1 items
+-rw-r--r--   1 root supergroup      5.4 G 2026-05-09 18:37 /user/bigdata/landing/amazon_reviews/reviews/Office_Products.jsonl

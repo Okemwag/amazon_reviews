@@ -1,0 +1,9 @@
+$ docker exec amazon_reviews_namenode hdfs dfs -ls /user/bigdata/amazon_reviews/gold
+
+Found 6 items
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:38 /user/bigdata/amazon_reviews/gold/ml_training_data
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:33 /user/bigdata/amazon_reviews/gold/monthly_review_trends
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:29 /user/bigdata/amazon_reviews/gold/product_summary
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:30 /user/bigdata/amazon_reviews/gold/rating_distribution
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:31 /user/bigdata/amazon_reviews/gold/sentiment_distribution
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:34 /user/bigdata/amazon_reviews/gold/verified_purchase_summary

@@ -1,0 +1,8 @@
+$ find /home/okemwag/DataProjects/amazon_reviews/output/charts -maxdepth 1 -type f -print
+
+/home/okemwag/DataProjects/amazon_reviews/output/charts/rating_distribution.svg
+/home/okemwag/DataProjects/amazon_reviews/output/charts/roc_auc_summary.svg
+/home/okemwag/DataProjects/amazon_reviews/output/charts/sentiment_distribution.svg
+/home/okemwag/DataProjects/amazon_reviews/output/charts/model_evaluation_metrics.svg
+/home/okemwag/DataProjects/amazon_reviews/output/charts/confusion_matrix.svg
+/home/okemwag/DataProjects/amazon_reviews/output/charts/.gitkeep

@@ -1,0 +1,30 @@
+$ docker exec amazon_reviews_namenode hdfs dfs -ls /user/bigdata/processed/amazon_reviews/reviews_cleaned
+
+Found 27 items
+-rw-r--r--   3 spark supergroup          0 2026-05-14 15:02 /user/bigdata/processed/amazon_reviews/reviews_cleaned/_SUCCESS
+drwxr-xr-x   - spark supergroup          0 2026-05-14 15:02 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=1998
+drwxr-xr-x   - spark supergroup          0 2026-05-14 15:02 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=1999
+drwxr-xr-x   - spark supergroup          0 2026-05-14 15:01 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2000
+drwxr-xr-x   - spark supergroup          0 2026-05-14 15:01 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2001
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2002
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2003
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2004
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2005
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2006
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2007
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2008
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2009
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2010
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2011
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2012
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:43 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2013
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2014
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2015
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2016
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2017
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2018
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2019
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2020
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2021
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2022
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:44 /user/bigdata/processed/amazon_reviews/reviews_cleaned/review_year=2023

@@ -1,0 +1,6 @@
+$ docker exec amazon_reviews_namenode hdfs dfs -ls /user/bigdata/amazon_reviews
+
+Found 3 items
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:34 /user/bigdata/amazon_reviews/gold
+drwxr-xr-x   - spark supergroup          0 2026-05-14 19:21 /user/bigdata/amazon_reviews/models
+drwxr-xr-x   - spark supergroup          0 2026-05-14 14:39 /user/bigdata/amazon_reviews/quarantine

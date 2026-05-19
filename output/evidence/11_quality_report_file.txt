@@ -1,0 +1,15 @@
+$ sed -n 1\,220p /home/okemwag/DataProjects/amazon_reviews/output/reports/quality_report.txt
+
+raw_count=12845712
+clean_count=12702414
+invalid_rating_count=1
+raw_invalid_rating_count=1
+clean_invalid_rating_count=0
+missing_rating=0
+missing_text=0
+missing_asin=0
+missing_user_id=0
+missing_timestamp=0
+negative_helpful_vote=0
+sentiment_counts={'1': 9995020, '2': 790645, '0': 1916749}
+status=passed

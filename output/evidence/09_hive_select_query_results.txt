@@ -1,0 +1,16 @@
+$ docker exec amazon_reviews_hive_server beeline -u jdbc:hive2://localhost:10000 -e SET\ hive.fetch.task.conversion=more\;\ USE\ ecommerce_reviews\;\ SELECT\ asin\,\ rating\,\ rating_class\,\ verified_purchase\,\ review_year\,\ review_month\ FROM\ cleaned_reviews\ LIMIT\ 10\;
+
++-------------+---------+---------------+--------------------+--------------+---------------+
+|    asin     | rating  | rating_class  | verified_purchase  | review_year  | review_month  |
++-------------+---------+---------------+--------------------+--------------+---------------+
+| B000000W5N  | 5.0     | positive      | false              | 1998         | 10            |
+| B000000W5N  | 5.0     | positive      | false              | 1998         | 11            |
+| B000000W5N  | 5.0     | positive      | false              | 1998         | 12            |
+| 1572313188  | 2.0     | negative      | false              | 1999         | 10            |
+| B000000W5N  | 5.0     | positive      | false              | 1999         | 10            |
+| B00000J4FS  | 4.0     | positive      | false              | 1999         | 10            |
+| B00000JFF1  | 1.0     | negative      | false              | 1999         | 10            |
+| B00000J4FS  | 3.0     | neutral       | false              | 1999         | 10            |
+| B00001ZWUC  | 3.0     | neutral       | false              | 1999         | 10            |
+| B00000J0CZ  | 5.0     | positive      | true               | 1999         | 10            |
++-------------+---------+---------------+--------------------+--------------+---------------+

@@ -1,0 +1,34 @@
+[
+  {
+    "task": "spark_count_total",
+    "seconds": 52.1443
+  },
+  {
+    "task": "spark_group_by_rating",
+    "seconds": 72.4643
+  },
+  {
+    "task": "spark_group_by_verified_purchase",
+    "seconds": 63.1218
+  },
+  {
+    "task": "spark_group_by_year_month",
+    "seconds": 55.1069
+  },
+  {
+    "task": "sql_count_total",
+    "seconds": 55.8447
+  },
+  {
+    "task": "sql_group_by_rating",
+    "seconds": 84.2894
+  },
+  {
+    "task": "sql_group_by_verified_purchase",
+    "seconds": 63.966
+  },
+  {
+    "task": "sql_group_by_year_month",
+    "seconds": 53.5953
+  }
+]

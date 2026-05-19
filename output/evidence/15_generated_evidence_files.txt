@@ -1,0 +1,23 @@
+$ find /home/okemwag/DataProjects/amazon_reviews/output/evidence -maxdepth 1 -type f -print
+
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/feature_importance_note.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/spark_schema_output.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/sentiment_distribution.json
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/rating_distribution.json
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/hive_select_query_results.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/14_generated_chart_files.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/12_ml_metrics_file.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/02_hdfs_raw_file_uploaded.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/07_predictions_sample_from_hdfs.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/03_hdfs_directory_tree.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/09_hive_select_query_results.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/10_quality_metrics_file.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/13_model_metrics_report.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/11_quality_report_file.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/spark_cleaned_row_count.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/01_docker_containers_running.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/04_silver_parquet_output_in_hdfs.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/15_generated_evidence_files.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/08_hive_database_tables_output.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/05_gold_parquet_output_in_hdfs.txt
+/home/okemwag/DataProjects/amazon_reviews/output/evidence/06_model_path_in_hdfs.txt
